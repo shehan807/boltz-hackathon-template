@@ -735,7 +735,7 @@ def process_token_features(  # noqa: C901, PLR0915, PLR0912
                     contact_threshold[idx, binder_mask] = max_distance
 
     if inference_contact_constraints is not None:
-        for token1, token2, max_distance, force in inference_contact_constraints:
+        for token1, token2, max_distance, force, repulsive_steering_potential in inference_contact_constraints:
             for idx1, _token1 in enumerate(token_data):
                 if (
                     _token1["mol_type"] != const.chain_type_ids["NONPOLYMER"]
@@ -2094,7 +2094,7 @@ def process_contact_feature_constraints(
                 thresholds.append(torch.full((atom_idx_pairs.shape[1],), max_distance))
                 union_idx += 1
 
-    for token1, token2, max_distance, force in inference_contact_constraints:
+    for token1, token2, max_distance, force, repulsive_steering_potential in inference_contact_constraints:
         if not force:
             continue
 
@@ -2129,7 +2129,7 @@ def process_contact_feature_constraints(
                             torch.full((atom_idx_pairs.shape[1],), union_idx)
                         )
                         negation_mask.append(
-                            torch.ones((atom_idx_pairs.shape[1],), dtype=torch.bool)
+                            torch.full((atom_idx_pairs.shape[1],), repulsive_steering_potential, dtype=torch.bool)
                         )
                         thresholds.append(
                             torch.full((atom_idx_pairs.shape[1],), max_distance)

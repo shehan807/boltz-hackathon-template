@@ -15,6 +15,30 @@ from hackathon_api import Datapoint, Protein, SmallMolecule
 # ---- Participants should modify these four functions ----------------------
 # ---------------------------------------------------------------------------
 
+def get_protein_windows(sequence_length: int, num_windows: int = 3) -> List[List[int]]:
+    """
+    Divide protein into N spatial windows/regions for targeted repulsion.
+
+    Args:
+        sequence_length: Length of protein sequence
+        num_windows: Number of regions to divide into
+
+    Returns:
+        List of windows, each containing residue indices (1-indexed)
+        Example: [[1,2,3,...,100], [101,102,...,200], [201,...,300]]
+    """
+    window_size = sequence_length // num_windows
+    windows = []
+
+    for i in range(num_windows):
+        start = i * window_size + 1  # 1-indexed
+        end = (i + 1) * window_size if i < num_windows - 1 else sequence_length
+        window = list(range(start, end + 1))
+        windows.append(window)
+        print(f"  [WINDOW {i}] Residues {start}-{end} ({len(window)} residues)")
+
+    return windows
+
 def prepare_protein_complex(datapoint_id: str, proteins: List[Protein], input_dict: dict, msa_dir: Optional[Path] = None) -> List[tuple[dict, List[str]]]:
     """
     Prepare input dict and CLI args for a protein complex prediction.
@@ -75,10 +99,14 @@ def prepare_protein_ligand(datapoint_id: str, protein: Protein, ligands: list[Sm
     # ```
     #
     # will add contact constraints to the input_dict
+    print(f"{datapoint_id}: protein_len={len(protein.sequence)},ligand_smiles={ligands[0].smiles[:]}")
+    windows = get_protein_windows(len(protein.sequence), num_windows=3)
+    constraints = [{"contact": {"token1": ["A", r], "token2": ["B", 1], "max_distance": 5.0, "repulsive_steering_potential": True}} for r in windows[0][::10]]
+    repel_dict = {**input_dict, "constraints": constraints}
 
     # Example: predict 5 structures
     cli_args = ["--diffusion_samples", "5"]
-    return [(input_dict, cli_args)]
+    return [(input_dict, cli_args), (repel_dict, cli_args)]
 
 def post_process_protein_complex(datapoint: Datapoint, input_dicts: List[dict[str, Any]], cli_args_list: List[list[str]], prediction_dirs: List[Path]) -> List[Path]:
     """
@@ -99,6 +127,15 @@ def post_process_protein_complex(datapoint: Datapoint, input_dicts: List[dict[st
 
     # Sort all PDBs and return their paths
     all_pdbs = sorted(all_pdbs)
+    
+    # Print available metrics
+    if all_pdbs:
+        import json
+        conf_json = all_pdbs[0].parent / f"confidence_{all_pdbs[0].stem}.json"
+        if conf_json.exists():
+            conf = json.load(open(conf_json))
+            print(f"[CONF] ligand_iptm={conf.get('ligand_iptm'):.3f}, conf={conf.get('confidence_score'):.3f}")
+
     return all_pdbs
 
 def post_process_protein_ligand(datapoint: Datapoint, input_dicts: List[dict[str, Any]], cli_args_list: List[list[str]], prediction_dirs: List[Path]) -> List[Path]:

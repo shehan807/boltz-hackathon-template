@@ -1571,8 +1571,9 @@ def parse_boltz_schema(  # noqa: C901, PLR0915, PLR0912
                 chains,
             )
             force = constraint["contact"].get("force", False)
+            repulsive_steering_potential = constraint["contact"].get("repulsive_steering_potential", False)
 
-            contact_constraints.append((token1, token2, max_distance, force))
+            contact_constraints.append((token1, token2, max_distance, force, repulsive_steering_potential))
         else:
             msg = f"Invalid constraint: {constraint}"
             raise ValueError(msg)
