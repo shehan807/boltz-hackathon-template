@@ -15,6 +15,12 @@ from hackathon_api import Datapoint, Protein, SmallMolecule
 # ---- Participants should modify these four functions ----------------------
 # ---------------------------------------------------------------------------
 
+def get_ligand_atom_names(smiles: str) -> List[str]:
+    from rdkit import Chem
+    from rdkit.Chem import AllChem
+    mol = Chem.MolFromSmiles(smiles)
+    return [f"{a.GetSymbol().upper()}{i+1}" for a, i in zip(mol.GetAtoms(), AllChem.CanonicalRankAtoms(mol))]
+
 def get_protein_windows(sequence_length: int, num_windows: int = 3) -> List[List[int]]:
     """
     Divide protein into N spatial windows/regions for targeted repulsion.
@@ -101,7 +107,8 @@ def prepare_protein_ligand(datapoint_id: str, protein: Protein, ligands: list[Sm
     # will add contact constraints to the input_dict
     print(f"{datapoint_id}: protein_len={len(protein.sequence)},ligand_smiles={ligands[0].smiles[:]}")
     windows = get_protein_windows(len(protein.sequence), num_windows=3)
-    constraints = [{"contact": {"token1": ["A", r], "token2": ["B", "C1"], "max_distance": 5.0, "repulsive_steering_potential": True}} for r in windows[0][::10]]
+    ligand_atoms = get_ligand_atom_names(ligands[0].smiles)
+    constraints = [{"contact": {"token1": ["A", r], "token2": ["B", ligand_atoms[0]], "max_distance": 5.0, "repulsive_steering_potential": True}} for r in windows[0][::10]]
     repel_dict = {**input_dict, "constraints": constraints}
 
     # Example: predict 5 structures
