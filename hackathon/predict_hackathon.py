@@ -18,7 +18,8 @@ from hackathon_api import Datapoint, Protein, SmallMolecule
 def get_ligand_atom_names(smiles: str) -> List[str]:
     from rdkit import Chem
     from rdkit.Chem import AllChem
-    mol = Chem.MolFromSmiles(smiles)
+    mol = AllChem.MolFromSmiles(smiles)
+    mol = AllChem.AddHs(mol)
     return [f"{a.GetSymbol().upper()}{i+1}" for a, i in zip(mol.GetAtoms(), AllChem.CanonicalRankAtoms(mol))]
 
 def get_protein_windows(sequence_length: int, num_windows: int = 3) -> List[List[int]]:
