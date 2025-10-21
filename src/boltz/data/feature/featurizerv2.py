@@ -713,60 +713,60 @@ def process_token_features(  # noqa: C901, PLR0915, PLR0912
     )
     contact_threshold = np.zeros((len(token_data), len(token_data)))
 
-    if inference_pocket_constraints is not None:
-        for binder, contacts, max_distance, force in inference_pocket_constraints:
-            binder_mask = token_data["asym_id"] == binder
+    #if inference_pocket_constraints is not None:
+    #    for binder, contacts, max_distance, force in inference_pocket_constraints:
+    #        binder_mask = token_data["asym_id"] == binder
 
-            for idx, token in enumerate(token_data):
-                if (
-                    token["mol_type"] != const.chain_type_ids["NONPOLYMER"]
-                    and (token["asym_id"], token["res_idx"]) in contacts
-                ) or (
-                    token["mol_type"] == const.chain_type_ids["NONPOLYMER"]
-                    and (token["asym_id"], token["atom_idx"]) in contacts
-                ):
-                    contact_conditioning[binder_mask, idx] = (
-                        const.contact_conditioning_info["BINDER>POCKET"]
-                    )
-                    contact_conditioning[idx, binder_mask] = (
-                        const.contact_conditioning_info["POCKET>BINDER"]
-                    )
-                    contact_threshold[binder_mask, idx] = max_distance
-                    contact_threshold[idx, binder_mask] = max_distance
+    #        for idx, token in enumerate(token_data):
+    #            if (
+    #                token["mol_type"] != const.chain_type_ids["NONPOLYMER"]
+    #                and (token["asym_id"], token["res_idx"]) in contacts
+    #            ) or (
+    #                token["mol_type"] == const.chain_type_ids["NONPOLYMER"]
+    #                and (token["asym_id"], token["atom_idx"]) in contacts
+    #            ):
+    #                contact_conditioning[binder_mask, idx] = (
+    #                    const.contact_conditioning_info["BINDER>POCKET"]
+    #                )
+    #                contact_conditioning[idx, binder_mask] = (
+    #                    const.contact_conditioning_info["POCKET>BINDER"]
+    #                )
+    #                contact_threshold[binder_mask, idx] = max_distance
+    #                contact_threshold[idx, binder_mask] = max_distance
 
-    if inference_contact_constraints is not None:
-        for constraint in inference_contact_constraints:
-            if len(constraint) == 5:
-                token1, token2, max_distance, force, repulsive_steering_potential = constraint
-            else:
-                token1, token2, max_distance, force = constraint
-                repulsive_steering_potential = False
-            for idx1, _token1 in enumerate(token_data):
-                if (
-                    _token1["mol_type"] != const.chain_type_ids["NONPOLYMER"]
-                    and (_token1["asym_id"], _token1["res_idx"]) == token1
-                ) or (
-                    _token1["mol_type"] == const.chain_type_ids["NONPOLYMER"]
-                    and (_token1["asym_id"], _token1["atom_idx"]) == token1
-                ):
-                    for idx2, _token2 in enumerate(token_data):
-                        if (
-                            _token2["mol_type"] != const.chain_type_ids["NONPOLYMER"]
-                            and (_token2["asym_id"], _token2["res_idx"]) == token2
-                        ) or (
-                            _token2["mol_type"] == const.chain_type_ids["NONPOLYMER"]
-                            and (_token2["asym_id"], _token2["atom_idx"]) == token2
-                        ):
-                            contact_conditioning[idx1, idx2] = (
-                                const.contact_conditioning_info["CONTACT"]
-                            )
-                            contact_conditioning[idx2, idx1] = (
-                                const.contact_conditioning_info["CONTACT"]
-                            )
-                            contact_threshold[idx1, idx2] = max_distance
-                            contact_threshold[idx2, idx1] = max_distance
-                            break
-                    break
+    #if inference_contact_constraints is not None:
+    #    for constraint in inference_contact_constraints:
+    #        if len(constraint) == 5:
+    #            token1, token2, max_distance, force, repulsive_steering_potential = constraint
+    #        else:
+    #            token1, token2, max_distance, force = constraint
+    #            repulsive_steering_potential = False
+    #        for idx1, _token1 in enumerate(token_data):
+    #            if (
+    #                _token1["mol_type"] != const.chain_type_ids["NONPOLYMER"]
+    #                and (_token1["asym_id"], _token1["res_idx"]) == token1
+    #            ) or (
+    #                _token1["mol_type"] == const.chain_type_ids["NONPOLYMER"]
+    #                and (_token1["asym_id"], _token1["atom_idx"]) == token1
+    #            ):
+    #                for idx2, _token2 in enumerate(token_data):
+    #                    if (
+    #                        _token2["mol_type"] != const.chain_type_ids["NONPOLYMER"]
+    #                        and (_token2["asym_id"], _token2["res_idx"]) == token2
+    #                    ) or (
+    #                        _token2["mol_type"] == const.chain_type_ids["NONPOLYMER"]
+    #                        and (_token2["asym_id"], _token2["atom_idx"]) == token2
+    #                    ):
+    #                        contact_conditioning[idx1, idx2] = (
+    #                            const.contact_conditioning_info["CONTACT"]
+    #                        )
+    #                        contact_conditioning[idx2, idx1] = (
+    #                            const.contact_conditioning_info["CONTACT"]
+    #                        )
+    #                        contact_threshold[idx1, idx2] = max_distance
+    #                        contact_threshold[idx2, idx1] = max_distance
+    #                        break
+    #                break
 
     if binder_pocket_conditioned_prop > 0.0:
         # choose as binder a random ligand in the crop, if there are no ligands select a protein chain
