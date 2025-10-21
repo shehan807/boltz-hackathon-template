@@ -101,7 +101,7 @@ def prepare_protein_ligand(datapoint_id: str, protein: Protein, ligands: list[Sm
     # will add contact constraints to the input_dict
     print(f"{datapoint_id}: protein_len={len(protein.sequence)},ligand_smiles={ligands[0].smiles[:]}")
     windows = get_protein_windows(len(protein.sequence), num_windows=3)
-    constraints = [{"contact": {"token1": ["A", r], "token2": ["B", 1], "max_distance": 5.0, "repulsive_steering_potential": True}} for r in windows[0][::10]]
+    constraints = [{"contact": {"token1": ["A", r], "token2": ["B", "C1"], "max_distance": 5.0, "repulsive_steering_potential": True}} for r in windows[0][::10]]
     repel_dict = {**input_dict, "constraints": constraints}
 
     # Example: predict 5 structures
