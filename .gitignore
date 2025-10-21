@@ -167,8 +167,8 @@ hackathon_data/
 # Boltz prediction outputs
 #   All result files generated from a boltz prediction call
 boltz_results_*/
-my_predictions/
+my_predictions*/
 tmp/
-my_results/
+my_results*/
 asos_public_evaluation/
 abag_public_evaluation/
