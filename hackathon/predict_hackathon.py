@@ -110,7 +110,7 @@ def prepare_protein_ligand(datapoint_id: str, protein: Protein, ligands: list[Sm
     windows = get_protein_windows(len(protein.sequence), num_windows=3)
     ligand_atoms = get_ligand_atom_names(ligands[0].smiles)
 
-    cli_args = ["--diffusion_samples", "5"]
+    cli_args = ["--diffusion_samples", "15"]
     configs = [(input_dict, cli_args)]  # Config 0: baseline
 
     for window_idx, window in enumerate(windows):
