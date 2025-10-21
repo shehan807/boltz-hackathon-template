@@ -109,12 +109,17 @@ def prepare_protein_ligand(datapoint_id: str, protein: Protein, ligands: list[Sm
     print(f"{datapoint_id}: protein_len={len(protein.sequence)},ligand_smiles={ligands[0].smiles[:]}")
     windows = get_protein_windows(len(protein.sequence), num_windows=3)
     ligand_atoms = get_ligand_atom_names(ligands[0].smiles)
-    constraints = [{"contact": {"token1": ["A", r], "token2": ["B", ligand_atoms[0]], "max_distance": 5.0, "repulsive_steering_potential": True}} for r in windows[0][::10]]
-    repel_dict = {**input_dict, "constraints": constraints}
 
-    # Example: predict 5 structures
     cli_args = ["--diffusion_samples", "5"]
-    return [(input_dict, cli_args), (repel_dict, cli_args)]
+    configs = [(input_dict, cli_args)]  # Config 0: baseline
+
+    for window_idx, window in enumerate(windows):
+        constraints = [{"contact": {"token1": ["A", r], "token2": ["B", ligand_atoms[0]], "max_distance": 5.0, "repulsive_steering_potential": True}} for r in window]
+        repel_dict = {**input_dict, "constraints": constraints}
+        configs.append((repel_dict, cli_args))
+        print(f"  Config {window_idx + 1}: {len(constraints)} repulsive constraints from window {window_idx}")
+
+    return configs
 
 def post_process_protein_complex(datapoint: Datapoint, input_dicts: List[dict[str, Any]], cli_args_list: List[list[str]], prediction_dirs: List[Path]) -> List[Path]:
     """
